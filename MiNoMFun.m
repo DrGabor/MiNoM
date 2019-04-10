@@ -67,9 +67,6 @@ for nIter_out = 1 : 1 : params.maxIter_icp
     %%
     [Model, Z] = MoEPFittingMultiFun(Err, P, params.maxEMCounter, params.maxIter_em, params.bRand, 0);
     LLH(end+1) = llhFun( Err, Model );
-    if strcmpi(params.optimize, 'admm')
-        [dR, dT] = ADMMFun( params, Z, Model );
-    end
     if strcmpi(params.optimize, 'irls')
         [dR, dT] = IRLSFun( params, Z, Model, params.maxIter_irls );
     end
