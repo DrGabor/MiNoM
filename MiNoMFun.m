@@ -8,7 +8,7 @@ if nargin == 0
     cloud_ref = pcread(DataDir);
     params = genParamsFun(cloud_mov.Location', cloud_ref.Location', ...
             'mode', 'point2plane', 'optimize', 'IRLS', ...
-            'mov_normal', cloud_mov.Normal', 'ref_normal', cloud_ref.Normal', ...
+            'ref_normal', cloud_ref.Normal', ...
             'is_show', 1, 'verbose', 1);
 end
 Mov0 = params.Mov;
@@ -44,6 +44,7 @@ if strcmpi(params.mode, 'plane2plane')
     Cov_Mov0 = compute_covariance(Mov0, kNum);
     Cov_Ref0 = compute_covariance(Ref0, kNum);
 end
+max_irls_iter = 1; 
 for nIter_out = 1 : 1 : params.maxIter_icp
     dTf = TfArray(end).tf;
     dR = dTf(1:nDim, 1:nDim);
@@ -68,7 +69,9 @@ for nIter_out = 1 : 1 : params.maxIter_icp
     [Model, Z] = MoEPFittingMultiFun(Err, P, params.maxEMCounter, params.maxIter_em, params.bRand, 0);
     LLH(end+1) = llhFun( Err, Model );
     if strcmpi(params.optimize, 'irls')
-        [dR, dT] = IRLSFun( params, Z, Model, params.maxIter_irls );
+        
+        [dR, dT] = IRLSFun( params, Z, Model, max_irls_iter );
+        max_irls_iter = min( max_irls_iter + 1, params.maxIter_irls ); 
     end
     R = TfArray(end).tf(1:nDim, 1:nDim);
     T = TfArray(end).tf(1:nDim, end);
